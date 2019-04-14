@@ -43,7 +43,8 @@
             <Pane prefHeight="64.0" prefWidth="509.0" />
             <Pane prefHeight="100.0" prefWidth="509.0">
                <children>
-                  <Button fx:id="button_test" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="Button" />
+                  <Button fx:id="button_test1" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="Button" />
+                  <Button fx:id="button_test2" layoutX="66.0" layoutY="14.0" mnemonicParsing="false" text="Button" />
                </children></Pane>
          </children>
       </VBox>

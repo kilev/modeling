@@ -1,10 +1,15 @@
 package com.kil.controllers;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import com.kil.Client;
+import com.kil.Logic;
+import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
+import javafx.geometry.Point2D;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
@@ -20,47 +25,87 @@ public class FXMLController {
     private URL location;
 
     @FXML
-    private  Label label_count;
+    private Label label_count;
+
 
     @FXML
-    private Button button_test;
+    private Button button_test1;
 
     @FXML
-    private  AnchorPane drawPane;
+    private Button button_test2;
 
-    private  final int lowIndex = 18;// min index of circle on drawPane
+    @FXML
+    private AnchorPane drawPane;
+
+    private final int lowIndex = 18;// min index of circle on drawPane
+    int i;
+    int j;
 
     @FXML
     void initialize() {
 
-        button_test.setOnAction(event->{
-            while(drawPane.getChildren().get(lowIndex) != null)
-                drawPane.getChildren().remove(lowIndex);
+        //update timer
+        AnimationTimer timer = new AnimationTimer() {
+            @Override
+            public void handle(long l) {
+                update();
+            }
+        };
+        timer.start();
+
+
+        button_test1.setOnAction(event -> {
+            Logic.createClient();
         });
 
-        Client client = new Client(true,true);
-        Client cl1 = new Client(false, true);
-        cl1.setX(175);
-        drawClient(client);
-        drawClient(cl1);
-        //drawPane.getChildren().remove(18);
-
+        button_test2.setOnAction(event -> {
+            Logic.clients.get(0).setX(Logic.clients.get(0).getX() + 50);
+        });
     }
 
-    public  void clearPane(){
-        while(drawPane.getChildren().get(lowIndex) != null)
+    public void clearPane() {
+        while (drawPane.getChildren().size() > lowIndex)
             drawPane.getChildren().remove(lowIndex);
     }
 
-    public  void drawClient(Client client) {
+
+    public void drawClient(Client client) {
         if (client.isReadyToDraw()) {
             Circle circle = new Circle(client.getX(), client.getY(), 15);
-            if(client.isTicket())
+
+            //set color
+            if (client.getTimeOnKassa() == 0)
                 circle.setFill(Color.BLUE);
             else
                 circle.setFill(Color.RED);
+
             drawPane.getChildren().add(circle);
-            label_count.setText(String.valueOf((int) drawPane.getChildren().size()));
         }
     }
+
+
+    public void update() {
+        if (Logic.play) {
+            clearPane();
+
+            List<Client> clientsToDraw = new ArrayList<>();
+            for (Client client : Logic.clients) {
+                if (client.isReadyToDraw())
+                    clientsToDraw.add(client);
+            }
+
+            int velocity = Logic.velocity;
+
+            for (Client client : clientsToDraw) {
+                client.move(velocity);
+            }
+
+            for (Client client : clientsToDraw) {
+                drawClient(client);
+            }
+
+
+        }
+    }
+
 }
