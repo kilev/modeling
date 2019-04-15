@@ -123,28 +123,45 @@ public class FXMLController {
 
         int velocity = Logic.velocity;
 
-        int n = clientsToDraw.size();
-
-//        for(int i = 0; i < n - 1; i++){
-//            if(clientsToDraw.get(n-1).getX() - clientsToDraw.get(n).getX() > 50)
-//                clientsToGo.add(clientsToDraw.get(n));
+        /// TODO: 16.04.2019 переписать коллизию какое то сложное говно
+//        int n = clientsToDraw.size() - 1;
+//        for(int i = 0; i < n; i++){
+//            if(clientsToDraw.get(n-1).getX() - clientsToDraw.get(n).getX() < 50 && clientsToDraw.get(n-1).getY() - clientsToDraw.get(n).getY() < 50)
+//                clientsToDraw.get(n).setReadyToGo(false);
+//            else
+//                clientsToDraw.get(n).setReadyToGo(true);
 //        }
 
         //moving and drawing clients
         for (Client client : clientsToDraw) {
+            //checkCollision();
             client.move(velocity);
             drawClient(client);
         }
 
     }
 
-    public void checkFPS() {
+    private void checkFPS() {
         frameCnt++;
         long currenttimeNano = System.nanoTime();
         if (currenttimeNano > lastTimeFPS + 1000000000) {
             label_FPS.setText(String.valueOf(frameCnt));
             frameCnt = 0;
             lastTimeFPS = currenttimeNano;
+        }
+    }
+
+    /// TODO: 16.04.2019 переписать коллизию какое то сложное говно
+    private void checkCollision() {
+        int size = drawPane.getChildren().size();
+
+        if (size > lowIndex) {
+            for (int i = lowIndex; i < size - 1; i++){
+                if(drawPane.getChildren().get(i).getBoundsInParent().intersects(drawPane.getChildren().get(i+1).getBoundsInParent()))
+                    Logic.clients.get(i-lowIndex).setReadyToGo(false);
+                else
+                    Logic.clients.get(i-lowIndex).setReadyToGo(true);
+            }
         }
     }
 
