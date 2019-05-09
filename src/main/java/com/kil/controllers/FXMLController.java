@@ -33,10 +33,16 @@ public class FXMLController {
     private Label label_FPS;
 
     @FXML
+    private Label label_totalClientFinished;
+
+    @FXML
     private Button button_test1;
 
     @FXML
     private Button button_test2;
+
+    @FXML
+    private Button button_test3;
 
     @FXML
     private AnchorPane drawPane;
@@ -44,12 +50,19 @@ public class FXMLController {
     @FXML
     private ComboBox<Integer> comboBox_speed;
 
-    private final int lowIndex = 18;// min index of circle on drawPane
-    long frameCnt;
-    long lastTimeFPS;
+    private int lowIndex;// min index of circle on drawPane
+    private long frameCnt;
+    private long lastTimeFPS;
+    private Circle spawnCircle;
+
 
     @FXML
     void initialize() {
+
+        lowIndex = drawPane.getChildren().size() + 1;
+        spawnCircle = new Circle(Logic.SPAWN_POINT.getX() - 1, Logic.SPAWN_POINT.getY(), Logic.CIRCLE_RADIUS);
+        spawnCircle.setVisible(false);
+        drawPane.getChildren().add(spawnCircle);
 
         //update timer
         AnimationTimer timer = new AnimationTimer() {
@@ -57,22 +70,25 @@ public class FXMLController {
             public void handle(long l) {
                 checkFPS();
                 update();
+                updateData();
             }
         };
         timer.start();
 
         //speed property
-        ObservableList<Integer> speedValues = FXCollections.observableArrayList(1, 2, 4, 8);
+        ObservableList<Integer> speedValues = FXCollections.observableArrayList(1, 2, 4, 8, 16);
         comboBox_speed.setItems(speedValues);
         comboBox_speed.setValue(1);
 
-        comboBox_speed.setOnAction(event -> {
-            Logic.velocity = comboBox_speed.getValue();
-        });
+        comboBox_speed.setOnAction(event -> Logic.velocity = comboBox_speed.getValue());
 
         //test button 1
         button_test1.setOnAction(event -> {
-            Logic.createClient();
+            Logic.createClient(false);
+        });
+
+        button_test3.setOnAction(event->{
+            Logic.createClient(true);
         });
 
         //test button 2
@@ -87,6 +103,57 @@ public class FXMLController {
         });
     }
 
+    private void updateData(){
+        label_count.setText(String.valueOf(Logic.stack));
+        label_totalClientFinished.setText(String.valueOf(Logic.totalClientFinished));
+    }
+
+    private void update() {
+        clearPane();
+
+        //add drawable clients to List
+        List<Client> clientsToDraw = new ArrayList<>();
+        for (Client client : Logic.clients) {
+            if (client.isReadyToDraw())
+                clientsToDraw.add(client);
+        }
+
+        //moving and drawing clients
+        for (Client client : clientsToDraw) {
+            client.move();
+            drawClient(client);
+        }
+
+        checkSpawn();
+    }
+
+
+    //check space to create(draw) new client
+    private void checkSpawn() {
+        Client potentialClient = null;
+        for (Client client : Logic.clients) {
+            if (!client.isReadyToDraw()) {
+                potentialClient = client;
+                break;
+            }
+        }
+
+        if (potentialClient == null)
+            return;
+
+        potentialClient.setReadyToDraw(true);
+        for (int i = lowIndex; i < drawPane.getChildren().size(); i++) {
+            if (spawnCircle.getBoundsInParent().intersects(drawPane.getChildren().get(i).getBoundsInParent())) {
+                potentialClient.setReadyToDraw(false);
+                break;
+            }
+        }
+
+        if (potentialClient.isReadyToDraw())
+            Logic.stack--;
+    }
+
+
     //clear space
     public void clearPane() {
         while (drawPane.getChildren().size() > lowIndex)
@@ -96,50 +163,18 @@ public class FXMLController {
     //drawing some client
     public void drawClient(Client client) {
         if (client.isReadyToDraw()) {
-            Circle circle = new Circle(client.getX(), client.getY(), 15);
+            Circle circle = new Circle(client.getX(), client.getY(), Logic.CIRCLE_RADIUS);
 
             //set color
-            if (client.isOnlyToKassa())
-                circle.setFill(Color.BLUE);
-            else
+            if (client.isTicket())
                 circle.setFill(Color.RED);
+            else
+                circle.setFill(Color.BLUE);
 
             drawPane.getChildren().add(circle);
         }
     }
 
-
-    public void update() {
-        label_count.setText(String.valueOf(Logic.stack));
-
-        clearPane();
-
-
-        List<Client> clientsToDraw = new ArrayList<>();
-        for (Client client : Logic.clients) {
-            if (client.isReadyToDraw())
-                clientsToDraw.add(client);
-        }
-
-        int velocity = Logic.velocity;
-
-        /// TODO: 16.04.2019 переписать коллизию какое то сложное говно
-//        int n = clientsToDraw.size() - 1;
-//        for(int i = 0; i < n; i++){
-//            if(clientsToDraw.get(n-1).getX() - clientsToDraw.get(n).getX() < 50 && clientsToDraw.get(n-1).getY() - clientsToDraw.get(n).getY() < 50)
-//                clientsToDraw.get(n).setReadyToGo(false);
-//            else
-//                clientsToDraw.get(n).setReadyToGo(true);
-//        }
-
-        //moving and drawing clients
-        for (Client client : clientsToDraw) {
-            //checkCollision();
-            client.move(velocity);
-            drawClient(client);
-        }
-
-    }
 
     private void checkFPS() {
         frameCnt++;
@@ -148,20 +183,6 @@ public class FXMLController {
             label_FPS.setText(String.valueOf(frameCnt));
             frameCnt = 0;
             lastTimeFPS = currenttimeNano;
-        }
-    }
-
-    /// TODO: 16.04.2019 переписать коллизию какое то сложное говно
-    private void checkCollision() {
-        int size = drawPane.getChildren().size();
-
-        if (size > lowIndex) {
-            for (int i = lowIndex; i < size - 1; i++){
-                if(drawPane.getChildren().get(i).getBoundsInParent().intersects(drawPane.getChildren().get(i+1).getBoundsInParent()))
-                    Logic.clients.get(i-lowIndex).setReadyToGo(false);
-                else
-                    Logic.clients.get(i-lowIndex).setReadyToGo(true);
-            }
         }
     }
 
