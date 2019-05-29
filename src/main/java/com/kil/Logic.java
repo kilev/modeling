@@ -1,48 +1,60 @@
 package com.kil;
 
-
-import javafx.geometry.Point2D;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Logic {
 
-    public static int totalClientCount;
-    public static int totalClientFinished;
+    public static double chance = 0.5;
 
-    public static final Point2D SPAWN_POINT = new Point2D(125, 75);
-    public static final int CIRCLE_RADIUS = 25;
+    public static int totalTime;
+    public static int clientsCount;
+    public static int countTicketClient;
+    public static int countNoTicketClient;
 
-    public static int stack;
-    public static boolean play = true;
-    public static int velocity = 1;
-    public static List<Client> clients = new ArrayList<>();
+    public static int matSpawn;
+    public static int matService;
+    public static double sigmaKassa;
 
-    public double averageTimeOnService;
-    public double averageTimeOnKassa;
+    public static List<Integer> listSpawnTimings = new ArrayList<>();
 
+    public static List<Client> clients = new ArrayList<>();// коллекция клиентов
 
-    public static void createClient(boolean ticket) {
-        Client client;
-        if (ticket)
-            client = new Client(200);
-        else
-            client = new Client(200, 200);
-        clients.add(client);
-        totalClientCount++;
-        stack++;
+    public static void setClients() {
+        countNoTicketClient = 0;
+        countTicketClient = 0;
+        clientsCount = 0;
+        clients.clear();
+        listSpawnTimings.clear();
+
+        while(listSpawnTimings.stream().reduce(0, Integer::sum) < totalTime){
+
+            listSpawnTimings.add(getRandomExpValue(matSpawn));
+            clientsCount++;
+
+            if (Math.random() < chance) {
+                clients.add(new Client(getRandomExpValue(matSpawn), getRandomExpValue(matService), getRandomReleyValue(sigmaKassa)));
+                countNoTicketClient++;
+            } else {
+                clients.add(new Client(getRandomExpValue(matSpawn), getRandomExpValue(matService)));
+                countTicketClient++;
+            }
+        }
+
+        LogicDynamics.stack = 0;
+        LogicDynamics.clients.clear();
+        for (Client client : clients) {
+            LogicDynamics.createClient(client);
+        }
     }
 
 
-    //delete finished client from clients List
-    public static void death(double id) {
-        for (Client client : clients) {
-            if (client.getId() == id) {
-                clients.remove(client);
-                totalClientFinished++;
-                return;
-            }
-        }
+    private static int getRandomReleyValue(double sigma) {
+        return (int) (sigma * Math.sqrt(-2 * Math.log(Math.random())));
+    }
+
+    private static int getRandomExpValue(int mat) {
+        return (int) (-(mat) * Math.log(Math.random()));
     }
 }

@@ -7,6 +7,8 @@ import java.util.ResourceBundle;
 
 import com.kil.Client;
 import com.kil.Logic;
+import com.kil.LogicDynamics;
+import com.kil.LogicStatic;
 import javafx.animation.AnimationTimer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,6 +16,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -25,6 +28,60 @@ public class FXMLController {
 
     @FXML
     private URL location;
+
+    @FXML
+    private TextField Text_M_inPut;
+
+    @FXML
+    private TextField Text_M_work;
+
+    @FXML
+    private TextField Text_S_pay;
+
+    @FXML
+    private TextField Text_time_h;
+
+    @FXML
+    private TextField Text_time_min;
+
+    @FXML
+    private TextField Text_time_sec;
+
+    @FXML
+    private Button button_save;
+
+    @FXML
+    private Label label_time;
+
+    @FXML
+    private TextField chanceTicket;
+
+    @FXML
+    private Label label_average_time_on_kassa;
+
+    @FXML
+    private Label label_average_time_on_service;
+
+    @FXML
+    private Label label_static_load_kassa_sec;
+
+    @FXML
+    private Label label_static_load_service_sec;
+
+    @FXML
+    private Label label_static_count;
+
+    @FXML
+    private Label label_static_noticket_count;
+
+    @FXML
+    private Label label_static_ticket_count;
+
+    @FXML
+    private Label label_static_load_service_percent;
+
+    @FXML
+    private Label label_static_load_kassa_percent;
 
     @FXML
     private Label label_count;
@@ -54,13 +111,14 @@ public class FXMLController {
     private long frameCnt;
     private long lastTimeFPS;
     private Circle spawnCircle;
+    private long time;
 
 
     @FXML
     void initialize() {
 
         lowIndex = drawPane.getChildren().size() + 1;
-        spawnCircle = new Circle(Logic.SPAWN_POINT.getX() - 1, Logic.SPAWN_POINT.getY(), Logic.CIRCLE_RADIUS);
+        spawnCircle = new Circle(LogicDynamics.SPAWN_POINT.getX() - 1, LogicDynamics.SPAWN_POINT.getY(), LogicDynamics.CIRCLE_RADIUS);
         spawnCircle.setVisible(false);
         drawPane.getChildren().add(spawnCircle);
 
@@ -68,52 +126,77 @@ public class FXMLController {
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long l) {
-                checkFPS();
+                updateFPSandTime();
                 update();
                 updateData();
             }
         };
-        timer.start();
 
         //speed property
         ObservableList<Integer> speedValues = FXCollections.observableArrayList(1, 2, 4, 8, 16);
         comboBox_speed.setItems(speedValues);
         comboBox_speed.setValue(1);
 
-        comboBox_speed.setOnAction(event -> Logic.velocity = comboBox_speed.getValue());
+        comboBox_speed.setOnAction(event -> LogicDynamics.velocity = comboBox_speed.getValue());
 
         //test button 1
         button_test1.setOnAction(event -> {
-            Logic.createClient(false);
+            LogicDynamics.createClient(false);
         });
 
+        //test button 3
         button_test3.setOnAction(event->{
-            Logic.createClient(true);
+            LogicDynamics.createClient(true);
         });
 
         //test button 2
         button_test2.setOnAction(event -> {
-            if (Logic.play) {
+            if (LogicDynamics.play) {
                 timer.stop();
-                Logic.play = false;
+                LogicDynamics.play = false;
             } else {
                 timer.start();
-                Logic.play = true;
+                LogicDynamics.play = true;
             }
+        });
+
+        //button save
+        button_save.setOnAction(event -> {
+            // считывание входных данных
+            Logic.totalTime = Integer.parseInt(Text_time_h.getText()) * 3600
+                    + Integer.parseInt(Text_time_min.getText()) * 60
+                    + Integer.parseInt(Text_time_sec.getText());
+            Logic.chance = Double.parseDouble(chanceTicket.getText());
+            Logic.matSpawn = Integer.parseInt(Text_M_inPut.getText());
+            Logic.matService = Integer.parseInt(Text_M_work.getText());
+            Logic.sigmaKassa = Double.parseDouble(Text_S_pay.getText());
+
+            Logic.setClients();
+
+            label_static_ticket_count.setText(String.valueOf(Logic.countTicketClient));
+            label_static_noticket_count.setText(String.valueOf(Logic.countNoTicketClient));
+            label_static_count.setText(String.valueOf(Logic.clientsCount));
+
+            LogicStatic.lounchWork();
+
+            //label_static_load_service_sec.setText(String.valueOf(Logic.totalTime - LogicStatic.timings.get(1).stream().reduce(0, Integer::sum)));
+            //label_static_load_kassa_sec.setText(String.valueOf(Logic.totalTime - LogicStatic.timings.get(2).stream().reduce(0, Integer::sum)));
         });
     }
 
     private void updateData(){
-        label_count.setText(String.valueOf(Logic.stack));
-        label_totalClientFinished.setText(String.valueOf(Logic.totalClientFinished));
+        label_count.setText(String.valueOf(LogicDynamics.stack));
+        label_totalClientFinished.setText(String.valueOf(LogicDynamics.totalClientFinished));
     }
 
     private void update() {
+
+
         clearPane();
 
         //add drawable clients to List
         List<Client> clientsToDraw = new ArrayList<>();
-        for (Client client : Logic.clients) {
+        for (Client client : LogicDynamics.clients) {
             if (client.isReadyToDraw())
                 clientsToDraw.add(client);
         }
@@ -131,7 +214,7 @@ public class FXMLController {
     //check space to create(draw) new client
     private void checkSpawn() {
         Client potentialClient = null;
-        for (Client client : Logic.clients) {
+        for (Client client : LogicDynamics.clients) {
             if (!client.isReadyToDraw()) {
                 potentialClient = client;
                 break;
@@ -150,7 +233,7 @@ public class FXMLController {
         }
 
         if (potentialClient.isReadyToDraw())
-            Logic.stack--;
+            LogicDynamics.stack--;
     }
 
 
@@ -163,7 +246,7 @@ public class FXMLController {
     //drawing some client
     public void drawClient(Client client) {
         if (client.isReadyToDraw()) {
-            Circle circle = new Circle(client.getX(), client.getY(), Logic.CIRCLE_RADIUS);
+            Circle circle = new Circle(client.getX(), client.getY(), LogicDynamics.CIRCLE_RADIUS);
 
             //set color
             if (client.isTicket())
@@ -175,11 +258,13 @@ public class FXMLController {
         }
     }
 
-
-    private void checkFPS() {
+    private void updateFPSandTime() {
         frameCnt++;
         long currenttimeNano = System.nanoTime();
         if (currenttimeNano > lastTimeFPS + 1000000000) {
+            time++;
+            label_time.setText(String.valueOf(time));
+
             label_FPS.setText(String.valueOf(frameCnt));
             frameCnt = 0;
             lastTimeFPS = currenttimeNano;

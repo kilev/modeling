@@ -11,8 +11,8 @@ public class Client {
     private int[] way;
     private String[] direction;
 
-    private int x = (int) Logic.SPAWN_POINT.getX();
-    private int y = (int) Logic.SPAWN_POINT.getY();
+    private int x = (int) LogicDynamics.SPAWN_POINT.getX();
+    private int y = (int) LogicDynamics.SPAWN_POINT.getY();
     private int velocity = 1;
     private int visible = 1;
 
@@ -20,20 +20,37 @@ public class Client {
     private boolean readyToDraw = false;
 
     private double id;
-    private double TimeOnService;
-    private double TimeOnKassa;
+    private int spawnDelay;
+    private int timeOnService;
+    private int timeOnKassa;
 
 
-    Client(int timeOnDistribution, int timeOnKassa) {
+    Client(int spawnDelay, int timeOnDistribution, int timeOnKassa) {
+        this.spawnDelay = spawnDelay;
+        this.timeOnService = timeOnDistribution;
+        this.timeOnKassa = timeOnKassa;
         this.ticket = false;
-        id = Logic.totalClientCount;
-            loadClassicProperties(timeOnDistribution, timeOnKassa);
+        id = LogicDynamics.totalClientCount;
+        loadClassicProperties(timeOnDistribution, timeOnKassa);
     }
 
-    Client(int timeOnDistribution){
+    Client(int spawnDelay, int timeOnDistribution) {
+        this.spawnDelay = spawnDelay;
+        this.timeOnService = timeOnDistribution;
         this.ticket = true;
-        id = Logic.totalClientCount;
+        id = LogicDynamics.totalClientCount;
         loadTicketProperties(timeOnDistribution);
+    }
+
+    Client(Client client){
+        if(client.ticket){
+            this.ticket = true;
+            this.timeOnKassa = client.timeOnKassa;
+        } else {
+            this.ticket = false;
+        }
+        this.timeOnService = client.timeOnService;
+        this.spawnDelay = client.spawnDelay;
     }
 
 
@@ -43,15 +60,15 @@ public class Client {
         moveByWay();
     }
 
-    private boolean checkCollision(){
-        for (Client client : Logic.clients) {
-            if(client == this)
+    private boolean checkCollision() {
+        for (Client client : LogicDynamics.clients) {
+            if (client == this)
                 continue;
-            if(client.getX() > this.getX() && client.getY() == this.getY())
-                if(client.getX() - this.getX() <= Logic.CIRCLE_RADIUS * 2)
+            if (client.getX() > this.getX() && client.getY() == this.getY())
+                if (client.getX() - this.getX() <= LogicDynamics.CIRCLE_RADIUS * 2)
                     return true;
-            if(client.getY() > this.getY() && client.getX() == this.getX())
-                if(client.getY() - this.getY() <= Logic.CIRCLE_RADIUS * 2)
+            if (client.getY() > this.getY() && client.getX() == this.getX())
+                if (client.getY() - this.getY() <= LogicDynamics.CIRCLE_RADIUS * 2)
                     return true;
         }
         return false;
@@ -70,8 +87,8 @@ public class Client {
             throw new NullPointerException();
 
         String dir = direction[trekID];
-        int localWay = velocity * Logic.velocity;
-        if(localWay > way[trekID])
+        int localWay = velocity * LogicDynamics.velocity;
+        if (localWay > way[trekID])
             localWay = way[trekID];
 
         switch (dir) {
@@ -87,17 +104,17 @@ public class Client {
                 way[trekID] -= localWay;
                 break;
             case "death":
-                Logic.death(id);
+                LogicDynamics.death(id);
                 break;
         }
     }
 
-    private void loadTicketProperties(int timeOnDistribution){
+    private void loadTicketProperties(int timeOnDistribution) {
         way = new int[]{250, timeOnDistribution, 25, 1};
         direction = new String[]{"forward", "pause", "down", "death"};
     }
 
-    private void loadClassicProperties(int timeOnDistribution, int timeOnKassa){
+    private void loadClassicProperties(int timeOnDistribution, int timeOnKassa) {
         way = new int[]{250, timeOnDistribution, 50, 100, timeOnKassa, 25, 1};
         direction = new String[]{"forward", "pause", "forward", "down", "pause", "down", "death"};
     }
