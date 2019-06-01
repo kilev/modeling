@@ -1,6 +1,7 @@
-package com.kil;
+package com.kil.Logics;
 
 
+import com.kil.Client;
 import javafx.geometry.Point2D;
 
 import java.util.ArrayList;

@@ -1,8 +1,9 @@
-package com.kil;
+package com.kil.Logics;
+
+import com.kil.Client;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Logic {
 
@@ -17,31 +18,36 @@ public class Logic {
     public static int matService;
     public static double sigmaKassa;
 
-    public static List<Integer> listSpawnTimings = new ArrayList<>();
+    static List<Client> clients = new ArrayList<>();// коллекция клиентов
 
-    public static List<Client> clients = new ArrayList<>();// коллекция клиентов
+    public static void setClientsAndStart() {
+        clients.clear();
 
-    public static void setClients() {
         countNoTicketClient = 0;
         countTicketClient = 0;
         clientsCount = 0;
-        clients.clear();
-        listSpawnTimings.clear();
+        int localTime = 0;
 
-        while(listSpawnTimings.stream().reduce(0, Integer::sum) < totalTime){
+        while(localTime < totalTime){
 
-            listSpawnTimings.add(getRandomExpValue(matSpawn));
+            int spawnRandom = getRandomExpValue(matSpawn);
+            localTime += spawnRandom;
             clientsCount++;
 
             if (Math.random() < chance) {
-                clients.add(new Client(getRandomExpValue(matSpawn), getRandomExpValue(matService), getRandomReleyValue(sigmaKassa)));
+                clients.add(new Client(spawnRandom, getRandomExpValue(matService), getRandomReleyValue(sigmaKassa)));
                 countNoTicketClient++;
             } else {
-                clients.add(new Client(getRandomExpValue(matSpawn), getRandomExpValue(matService)));
+                clients.add(new Client(spawnRandom, getRandomExpValue(matService)));
                 countTicketClient++;
             }
         }
 
+        lounchDynamic();
+        LogicStatic.lounchWork();
+    }
+
+    private static void lounchDynamic(){
         LogicDynamics.stack = 0;
         LogicDynamics.clients.clear();
         for (Client client : clients) {

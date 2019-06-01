@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import com.kil.Client;
-import com.kil.Logic;
-import com.kil.LogicDynamics;
-import com.kil.LogicStatic;
+import com.kil.Logics.Logic;
+import com.kil.Logics.LogicDynamics;
+import com.kil.Logics.LogicStatic;
 import javafx.animation.AnimationTimer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -171,16 +171,15 @@ public class FXMLController {
             Logic.matService = Integer.parseInt(Text_M_work.getText());
             Logic.sigmaKassa = Double.parseDouble(Text_S_pay.getText());
 
-            Logic.setClients();
+            Logic.setClientsAndStart();
 
             label_static_ticket_count.setText(String.valueOf(Logic.countTicketClient));
             label_static_noticket_count.setText(String.valueOf(Logic.countNoTicketClient));
             label_static_count.setText(String.valueOf(Logic.clientsCount));
 
-            LogicStatic.lounchWork();
-
-            //label_static_load_service_sec.setText(String.valueOf(Logic.totalTime - LogicStatic.timings.get(1).stream().reduce(0, Integer::sum)));
-            //label_static_load_kassa_sec.setText(String.valueOf(Logic.totalTime - LogicStatic.timings.get(2).stream().reduce(0, Integer::sum)));
+            //вывод статистики
+            label_static_load_service_sec.setText(String.valueOf(LogicStatic.serviceManager.getWorkTime()));
+            label_static_load_kassa_sec.setText(String.valueOf(LogicStatic.kassaManager.getWorkTime()));
         });
     }
 

@@ -1,5 +1,6 @@
 package com.kil;
 
+import com.kil.Logics.LogicDynamics;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,7 +26,7 @@ public class Client {
     private int timeOnKassa;
 
 
-    Client(int spawnDelay, int timeOnDistribution, int timeOnKassa) {
+    public Client(int spawnDelay, int timeOnDistribution, int timeOnKassa) {
         this.spawnDelay = spawnDelay;
         this.timeOnService = timeOnDistribution;
         this.timeOnKassa = timeOnKassa;
@@ -34,7 +35,7 @@ public class Client {
         loadClassicProperties(timeOnDistribution, timeOnKassa);
     }
 
-    Client(int spawnDelay, int timeOnDistribution) {
+    public Client(int spawnDelay, int timeOnDistribution) {
         this.spawnDelay = spawnDelay;
         this.timeOnService = timeOnDistribution;
         this.ticket = true;
@@ -42,12 +43,12 @@ public class Client {
         loadTicketProperties(timeOnDistribution);
     }
 
-    Client(Client client){
+    public Client(Client client){
         if(client.ticket){
             this.ticket = true;
-            this.timeOnKassa = client.timeOnKassa;
         } else {
             this.ticket = false;
+            this.timeOnKassa = client.timeOnKassa;
         }
         this.timeOnService = client.timeOnService;
         this.spawnDelay = client.spawnDelay;
