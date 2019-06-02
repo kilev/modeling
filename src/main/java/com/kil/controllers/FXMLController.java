@@ -17,7 +17,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import lombok.extern.java.Log;
 
 public class FXMLController {
 
@@ -61,12 +60,6 @@ public class FXMLController {
     private Label label_average_time_on_service;
 
     @FXML
-    private Label label_static_load_kassa_sec;
-
-    @FXML
-    private Label label_static_load_service_sec;
-
-    @FXML
     private Label label_static_count;
 
     @FXML
@@ -91,19 +84,13 @@ public class FXMLController {
     private ListView<String> serviceList;
 
     @FXML
-    private Spinner<Integer> CountService;
+    private Spinner<Integer> countService;
 
     @FXML
     private Spinner<Integer> countKassa;
 
     @FXML
-    private Button button_test1;
-
-    @FXML
     private Button button_test2;
-
-    @FXML
-    private Button button_test3;
 
     @FXML
     private AnchorPane drawPane;
@@ -143,15 +130,11 @@ public class FXMLController {
 
         comboBox_speed.setOnAction(event -> LogicDynamics.velocity = comboBox_speed.getValue());
 
-        //test button 1
-        button_test1.setOnAction(event -> {
-            LogicDynamics.createClient(false);
-        });
-
-        //test button 3
-        button_test3.setOnAction(event->{
-            LogicDynamics.createClient(true);
-        });
+        //setUp spinners
+        SpinnerValueFactory<Integer> valueFactoryService = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1);
+        SpinnerValueFactory<Integer> valueFactoryKassa = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1);
+        countKassa.setValueFactory(valueFactoryService);
+        countService.setValueFactory(valueFactoryKassa);
 
         //test button 2
         button_test2.setOnAction(event -> {
@@ -175,22 +158,28 @@ public class FXMLController {
             Logic.matService = Integer.parseInt(Text_M_work.getText());// считывание мат ожиданя обслуживания на раздаче
             Logic.sigmaKassa = Double.parseDouble(Text_S_pay.getText());// считывания сигмы обслуживания на кассе
 
+            Logic.serviceCount = countService.getValue();
+            Logic.kassaCount = countKassa.getValue();
+
             //запуск логики
-            //Logic.experiment(0.2);
             Logic.run();
 
-            ObservableList<String> serviceBooks = FXCollections.observableArrayList("раздача №1:   " + Logic.convertToHMS(Logic.meanService));
-            ObservableList<String> kassaBooks = FXCollections.observableArrayList("касса №1:   " + Logic.convertToHMS(Logic.meanKassa));
+            //вывод статистики
+            ObservableList<String> serviceBooks = FXCollections.observableArrayList();
+            for (int i = 0; i < Logic.serviceCount; i++) {
+                serviceBooks.add("раздача №" + (i+1) + ":   " + Logic.convertToHMSP(Logic.averageServiceAmount.get(i), true));
+            }
+            ObservableList<String> kassaBooks = FXCollections.observableArrayList();
+            for (int i = 0; i < Logic.kassaCount; i++) {
+                kassaBooks.add("касса №" + (i+1) + ":   " + Logic.convertToHMSP(Logic.averageKassaAmount.get(i), true));
+            }
             kassaList.setItems(kassaBooks);
             serviceList.setItems(serviceBooks);
 
-            //вывод статистики
             label_static_ticket_count.setText(String.valueOf(Logic.countTicketClient));// вывод кол-ва клиентов
             label_static_noticket_count.setText(String.valueOf(Logic.countNoTicketClient));// вывод кол-ва клиентов без талона
             label_static_count.setText(String.valueOf(Logic.clientsCount));// вывод кол-ва клиентов с талоном
-
-            label_static_load_service_sec.setText(String.valueOf(LogicStatic.serviceManager.getWorkTime()));// вывод среднего времени обслуживания на кассе
-            label_static_load_kassa_sec.setText(String.valueOf(LogicStatic.kassaManager.getWorkTime()));// вывод среднего времени обслуживания на кассе
+            label_average_time_on_service.setText(String.valueOf(Logic.convertToHMSP(Logic.averageTimeOnService, false)));
         });
     }
 

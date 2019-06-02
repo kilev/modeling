@@ -11,8 +11,9 @@ public class LogicStatic {
 
     private static List<Client> stack1 = new ArrayList<>();// очередь перед раздачей
     private static List<Client> stack2 = new ArrayList<>();// очередь перед кассой
-    public static Manager serviceManager;// указывает на клиента на раздаче
-    public static Manager kassaManager;// указывает на клиента на кассе
+
+    public static List<Manager> managersService = new ArrayList<>();
+    public static List<Manager> managersKassa = new ArrayList<>();
 
     public static List<Client> clients = new ArrayList<>();
 
@@ -26,8 +27,17 @@ public class LogicStatic {
         clients.clear();
         stack1.clear();
         stack2.clear();
-        serviceManager = new Manager();
-        kassaManager = new Manager();
+//        serviceManager = new Manager();
+//        kassaManager = new Manager();
+
+        managersService.clear();
+        managersKassa.clear();
+        for (int i = 0; i < Logic.serviceCount; i++) {
+            managersService.add(new Manager());
+        }
+        for (int i = 0; i < Logic.kassaCount; i++) {
+            managersKassa.add(new Manager());
+        }
 
         // копируем клиентов
         for (Client client : Logic.clients)
@@ -50,13 +60,23 @@ public class LogicStatic {
                 break;
 
             case "service done":
-                if (!serviceManager.getClient().isTicket())
-                    stack2.add(nextEvent.eventClient);
-                serviceManager.removeClient(localTime);
+                for (Manager manager : managersService) {
+                    if (manager.getClient() == nextEvent.eventClient) {
+                        if (!manager.getClient().isTicket())
+                            stack2.add(nextEvent.eventClient);
+                        manager.removeClient(localTime);
+                        return;
+                    }
+                }
                 break;
 
             case "kassa done":
-                kassaManager.removeClient(localTime);
+                for (Manager manager : managersKassa) {
+                    if(manager.getClient() == nextEvent.eventClient){
+                        manager.removeClient(localTime);
+                        return;
+                    }
+                }
                 break;
         }
     }
@@ -68,51 +88,92 @@ public class LogicStatic {
         if (!clients.isEmpty() && clients.get(0).getSpawnDelay() < event.eventTime)
             event = new Event(clients.get(0), clients.get(0).getSpawnDelay(), "spawn");
 
-        if (serviceManager.isWorking())
-            if (serviceManager.getClient().getTimeOnService() < event.eventTime && stack2.size() < 3)
-                event = new Event(serviceManager.getClient(), serviceManager.getClient().getTimeOnService(), "service done");
+        for (Manager manager : managersService) {
+            if (manager.isWorking())
+                if (manager.getClient().getTimeOnService() < event.eventTime && stack2.size() < 3)
+                    event = new Event(manager.getClient(), manager.getClient().getTimeOnService(), "service done");
+        }
 
-        if (kassaManager.isWorking())
-            if (kassaManager.getClient().getTimeOnKassa() < event.eventTime)
-                event = new Event(kassaManager.getClient(), kassaManager.getClient().getTimeOnKassa(), "kassa done");
+        for (Manager manager : managersKassa) {
+            if (manager.isWorking())
+                if (manager.getClient().getTimeOnKassa() < event.eventTime)
+                    event = new Event(manager.getClient(), manager.getClient().getTimeOnKassa(), "kassa done");
+        }
 
 
         //вычитание времени
         if (!event.event.equals("spawn"))
             clients.get(0).setSpawnDelay(clients.get(0).getSpawnDelay() - event.eventTime);
 
-        if (!event.event.equals("service done") && serviceManager.isWorking())
-            if(serviceManager.getClient().getTimeOnService() < event.eventTime)
-                serviceManager.getClient().setTimeOnService(0);
-            else
-                serviceManager.getClient().setTimeOnService(serviceManager.getClient().getTimeOnService() - event.eventTime);
+        for (Manager manager : managersService) {
+            if (!event.event.equals("service done") && manager.isWorking())
+                if (manager.getClient().getTimeOnService() < event.eventTime)
+                    manager.getClient().setTimeOnService(0);
+                else
+                    manager.getClient().setTimeOnService(manager.getClient().getTimeOnService() - event.eventTime);
+        }
 
-        if (!event.event.equals("kassa done") && kassaManager.isWorking())
-            if(kassaManager.getClient().getTimeOnKassa() < event.eventTime)
-                kassaManager.getClient().setTimeOnKassa(0);
-            else
-                kassaManager.getClient().setTimeOnKassa(kassaManager.getClient().getTimeOnKassa() - event.eventTime);
-
+        for (Manager manager : managersKassa) {
+            if (!event.event.equals("kassa done") && manager.isWorking())
+                if (manager.getClient().getTimeOnKassa() < event.eventTime)
+                    manager.getClient().setTimeOnKassa(0);
+                else
+                    manager.getClient().setTimeOnKassa(manager.getClient().getTimeOnKassa() - event.eventTime);
+        }
         nextEvent = event;
     }
 
     //проверяем свободна ли станция и пуляем туда клиента
     private static void CheckWork() {
-        if (!serviceManager.isWorking() && !stack1.isEmpty()) {
-            serviceManager.setClient(stack1.get(0), localTime);
-            stack1.remove(stack1.get(0));
+        for (Manager manager : managersService) {
+            if (!manager.isWorking() && !stack1.isEmpty()) {
+                manager.setClient(stack1.get(0), localTime);
+                stack1.remove(stack1.get(0));
+            }
         }
-        if (!kassaManager.isWorking() && !stack2.isEmpty()) {
-            kassaManager.setClient(stack2.get(0), localTime);
-            stack2.remove(stack2.get(0));
+        for (Manager manager : managersKassa) {
+            if (!manager.isWorking() && !stack2.isEmpty()) {
+                manager.setClient(stack2.get(0), localTime);
+                stack2.remove(stack2.get(0));
+            }
         }
     }
 
-    public static int getCustomersAmount(){
-        return serviceManager.getWorkTime();
+    public static List<Integer> getServiceAmounts() {
+        List<Integer> res = new ArrayList<>();
+        for (Manager manager : managersService) {
+            res.add(manager.getWorkTime());
+        }
+        return res;
     }
 
-    public static int getKassaAmount(){
-        return kassaManager.getWorkTime();
+    public static List<Integer> getKassaAmounts() {
+        List<Integer> res = new ArrayList<>();
+        for (Manager manager : managersKassa) {
+            res.add(manager.getWorkTime());
+        }
+        return res;
+    }
+
+    public static int getClientsCount(){
+        return Logic.clientsCount;
+    }
+
+    public static int getTicketsClientCount(){
+        return Logic.countTicketClient;
+    }
+
+    public static int getNoTicketsClientCount(){
+        return  Logic.countNoTicketClient;
+    }
+    
+    public static int getAverageServiceTime(){
+        int time = 0;
+        int count = 0;
+        for (Manager manager : managersService) {
+            time += manager.getWorkTime();
+            count += manager.getClientCount();
+        }
+        return time/count;
     }
 }

@@ -31,8 +31,6 @@
                         <Label layoutX="14.0" layoutY="243.0" text="Среднее время ожидания в очереди:" />
                         <Label fx:id="label_average_time_on_kassa" layoutX="232.0" layoutY="243.0" text="-" />
                         <Label fx:id="label_average_time_on_service" layoutX="232.0" layoutY="225.0" text="-" />
-                        <Label fx:id="label_static_load_kassa_sec" layoutX="232.0" layoutY="208.0" text="-" />
-                        <Label fx:id="label_static_load_service_sec" layoutX="232.0" layoutY="191.0" text="-" />
                         <Label fx:id="label_static_count" layoutX="624.0" layoutY="208.0" text="-" />
                         <Label fx:id="label_static_noticket_count" layoutX="624.0" layoutY="225.0" text="-" />
                         <Label layoutX="446.0" layoutY="225.0" text="кол-во клиентов без талоном:" />
@@ -78,9 +76,10 @@
                               </AnchorPane>
                               <Pane prefHeight="64.0" prefWidth="509.0">
                                  <children>
-                                    <Button fx:id="button_test1" layoutX="3.0" layoutY="13.0" mnemonicParsing="false" text="noTicket" />
-                                    <Button fx:id="button_test3" layoutX="64.0" layoutY="13.0" mnemonicParsing="false" text="Ticket" />
-                                    <Button fx:id="button_test2" layoutX="111.0" layoutY="13.0" mnemonicParsing="false" text="play / pause" />
+                                    <Button fx:id="button_test2" layoutX="143.0" layoutY="10.0" mnemonicParsing="false" prefHeight="43.0" prefWidth="222.0" text="Пуск / Пауза">
+                                       <font>
+                                          <Font size="18.0" />
+                                       </font></Button>
                                  </children>
                               </Pane>
                            </children>
@@ -142,7 +141,7 @@
             <Label layoutX="178.0" layoutY="46.0" text="sec" />
             <Label layoutX="7.0" layoutY="173.0" text="Количество раздач:" />
             <Label layoutX="7.0" layoutY="202.0" text="Количество касс" />
-            <Spinner fx:id="CountService" layoutX="127.0" layoutY="169.0" prefHeight="25.0" prefWidth="63.0" />
+            <Spinner fx:id="countService" layoutX="127.0" layoutY="169.0" prefHeight="25.0" prefWidth="63.0" />
             <Spinner fx:id="countKassa" layoutX="127.0" layoutY="198.0" prefHeight="25.0" prefWidth="63.0" />
          </children>
       </Pane>

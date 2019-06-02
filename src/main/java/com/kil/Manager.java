@@ -10,6 +10,8 @@ public class Manager {
     private boolean working = false;
     @Getter
     private Client client;
+    @Getter
+    private int clientCount;
 
     private List<Integer> serviceTimes = new ArrayList<>();
     private int timeStart;
@@ -26,6 +28,7 @@ public class Manager {
         this.client = null;
         serviceTimes.add(time - timeStart);
         working = false;
+        clientCount++;
     }
 
     public int getWorkTime(){

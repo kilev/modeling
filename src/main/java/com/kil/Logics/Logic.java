@@ -19,11 +19,15 @@ public class Logic {
     public static int matService;
     public static double sigmaKassa;
 
-    public static int meanService;
-    public static int meanKassa;
+    public static int serviceCount;
+    public static int kassaCount;
+
+    public static int averageTimeOnService;
+
 
     static List<Client> clients = new ArrayList<>();// коллекция клиентов
 
+    //рандомим клиентов
     public static void setClients() {
         clients.clear();
 
@@ -32,7 +36,7 @@ public class Logic {
         clientsCount = 0;
         int localTime = 0;
 
-        while(localTime < totalTime){
+        while (localTime < totalTime) {
 
             int spawnRandom = getRandomExpValue(matSpawn);
             localTime += spawnRandom;
@@ -46,12 +50,9 @@ public class Logic {
                 countTicketClient++;
             }
         }
-
-        //lounchDynamic();
-        //experiment(0.0001);
     }
 
-    private static void lounchDynamic(){
+    private static void lounchDynamic() {
         LogicDynamics.stack = 0;
         LogicDynamics.clients.clear();
         for (Client client : clients) {
@@ -69,29 +70,32 @@ public class Logic {
     }
 
 
-
-
-    static double getMean(List<Integer> data){
+    static double getMean(List<Integer> data) {
         int temp = data.stream().reduce(0, Integer::sum);
-        return temp/data.size();
+        return temp / data.size();
     }
 
-    static double getMeanDouble(List<Double> data){
+    static double getMeanDouble(List<Double> data) {
         double temp = data.stream().reduce(0.0, Double::sum);
-        return temp/data.size();
+        return temp / data.size();
     }
 
     static double getVariance(List<Integer> data, double mean) {
         double temp = 0;
-        for(int a : data)
+        for (int a : data)
             temp += ((a - mean) * (a - mean));
         return temp / (data.size());
     }
 
-    static List<Double> averageKassaAmount = new ArrayList<>();
+    public static List<Integer> averageKassaAmount = new ArrayList<>();
+    public static List<Integer> averageServiceAmount = new ArrayList<>();
+    public static List<Integer> averageClientCount = new ArrayList<>();
+    public static List<Integer> averageTicketClientsCount = new ArrayList<>();
+    public static List<Integer> averageNoTicketClientsCount = new ArrayList<>();
+    public static List<Integer> averageServiceTime = new ArrayList<>();
 
     public static double experiment(double epsilon) {
-        Map<Double, Double> t = new HashMap<Double, Double>() {{
+        Map<Double, Double> t = new HashMap<>() {{
             put(0.20, 1.64);
             put(0.15, 2.08);
             put(0.10, 2.71);
@@ -110,33 +114,77 @@ public class Logic {
         double t_a = t.get(epsilon);
         double variance;
         double mean;
-        List<Integer> amounts = new ArrayList<>();
-        List<Integer> amountsKassa = new ArrayList<>();
+
+        averageKassaAmount.clear();
+        averageServiceAmount.clear();
+        averageClientCount.clear();
+        averageTicketClientsCount.clear();
+        averageNoTicketClientsCount.clear();
+        averageServiceTime.clear();
+
+        List<List<Integer>> amountsService = new ArrayList<>();
+        for (int i = 0; i < Logic.serviceCount; i++) {
+            amountsService.add(new ArrayList<>());
+        }
+        List<List<Integer>> amountsKassa = new ArrayList<>();
+        for (int i = 0; i < Logic.kassaCount; i++) {
+            amountsKassa.add(new ArrayList<>());
+        }
 
         while (true) {
             for (int i = 0; i < N; i++) {
                 setClients();
                 LogicStatic.lounchWork();
 
-                amounts.add(LogicStatic.getCustomersAmount());
-                amountsKassa.add((LogicStatic.getKassaAmount()));
+                //заполняем эти поля для подсчета средних значений//
+                List<Integer> serviceAmount = LogicStatic.getServiceAmounts();
+                List<Integer> kassaAmount = LogicStatic.getKassaAmounts();
+
+                averageClientCount.add(LogicStatic.getClientsCount());
+                averageTicketClientsCount.add(LogicStatic.getTicketsClientCount());
+                averageNoTicketClientsCount.add(LogicStatic.getNoTicketsClientCount());
+                averageServiceTime.add(LogicStatic.getAverageServiceTime());
+                ////
+
+                for (int j = 0; j < serviceAmount.size(); j++) {
+                    amountsService.get(j).add(serviceAmount.get(j));
+                }
+
+                for (int j = 0; j < kassaAmount.size(); j++) {
+                    amountsKassa.get(j).add(kassaAmount.get(j));
+                }
             }
-            mean = getMean(amounts);
-            variance = getVariance(amounts, mean);
+            mean = getMean(amountsService.get(0));
+            variance = getVariance(amountsService.get(0), mean);
             newN = (int) ((variance / (epsilon * mean * epsilon * mean)) * (t_a * t_a));
             if (N >= newN)
                 break;
             else {
                 N = newN;
-                amounts.clear();
+                amountsService.clear();
+                amountsKassa.clear();
             }
         }
         System.out.println("N := " + N);
-        averageKassaAmount.add(getMean(amountsKassa));
+
+        //подсчет средних значений за эксперимент
+        for (int i = 0; i < serviceCount; i++) {
+            averageServiceAmount.add((int) getMean(amountsService.get(i)));
+        }
+        for (int i = 0; i < kassaCount; i++) {
+            averageKassaAmount.add((int) getMean(amountsKassa.get(i)));
+        }
+        clientsCount = (int) getMean(averageClientCount);
+        countTicketClient = (int) getMean(averageTicketClientsCount);
+        countNoTicketClient = (int) getMean(averageNoTicketClientsCount);
+        averageTimeOnService = (int) getMean(averageServiceTime);
         return mean;
     }
 
-    public static void run(){
+
+
+
+    public static void run() {
         double epsilon = 0.2;
         List<Double> averageAmounts = new ArrayList<>();
         for (int i = 0; i < 6; i++) {
@@ -154,21 +202,18 @@ public class Logic {
                 .orElse(Double.NaN);
         System.out.printf("Min: %.2f; Max %.2f %n", min, max);
         System.out.printf("Difference: %.2f %n", (max - min));
-
-        meanService = (int) getMeanDouble(averageAmounts);
-        meanKassa = (int) getMeanDouble(averageKassaAmount);
-        averageKassaAmount.clear();
     }
 
-    public static String convertToHMS(int value){
+    public static String convertToHMSP(int value, boolean percent) {
         String str = "";
-        if(value / 3600 != 0)
+        if (value / 3600 != 0)
             str += value / 3600 + "Ч ";
-        if((value % 3600) / 60 != 0)
+        if ((value % 3600) / 60 != 0)
             str += (value % 3600) / 60 + "М ";
-        if((value % 3600) % 60 != 0)
-            str += (value % 3600) % 60 + "С";
-        str += "  или " + String.format("%.2f", 100 * ((double) value) / totalTime)+ "%";
+        if ((value % 3600) % 60 != 0)
+            str += (value % 3600) % 60 + "С ";
+        if(percent)
+            str += " или " + String.format("%.2f", 100 * ((double) value) / totalTime) + "%";
         return str;
     }
 }
