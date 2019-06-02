@@ -13,13 +13,11 @@ import javafx.animation.AnimationTimer;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import lombok.extern.java.Log;
 
 public class FXMLController {
 
@@ -78,12 +76,6 @@ public class FXMLController {
     private Label label_static_ticket_count;
 
     @FXML
-    private Label label_static_load_service_percent;
-
-    @FXML
-    private Label label_static_load_kassa_percent;
-
-    @FXML
     private Label label_count;
 
     @FXML
@@ -91,6 +83,18 @@ public class FXMLController {
 
     @FXML
     private Label label_totalClientFinished;
+
+    @FXML
+    private ListView<String> kassaList;
+
+    @FXML
+    private ListView<String> serviceList;
+
+    @FXML
+    private Spinner<Integer> CountService;
+
+    @FXML
+    private Spinner<Integer> countKassa;
 
     @FXML
     private Button button_test1;
@@ -165,21 +169,28 @@ public class FXMLController {
             // считывание входных данных
             Logic.totalTime = Integer.parseInt(Text_time_h.getText()) * 3600
                     + Integer.parseInt(Text_time_min.getText()) * 60
-                    + Integer.parseInt(Text_time_sec.getText());
-            Logic.chance = Double.parseDouble(chanceTicket.getText());
-            Logic.matSpawn = Integer.parseInt(Text_M_inPut.getText());
-            Logic.matService = Integer.parseInt(Text_M_work.getText());
-            Logic.sigmaKassa = Double.parseDouble(Text_S_pay.getText());
+                    + Integer.parseInt(Text_time_sec.getText());// считывание общего времени моделирования
+            Logic.chance = Double.parseDouble(chanceTicket.getText());// считывание вероятности талона
+            Logic.matSpawn = Integer.parseInt(Text_M_inPut.getText());// считывание мат ожидания спавна
+            Logic.matService = Integer.parseInt(Text_M_work.getText());// считывание мат ожиданя обслуживания на раздаче
+            Logic.sigmaKassa = Double.parseDouble(Text_S_pay.getText());// считывания сигмы обслуживания на кассе
 
-            Logic.setClientsAndStart();
+            //запуск логики
+            //Logic.experiment(0.2);
+            Logic.run();
 
-            label_static_ticket_count.setText(String.valueOf(Logic.countTicketClient));
-            label_static_noticket_count.setText(String.valueOf(Logic.countNoTicketClient));
-            label_static_count.setText(String.valueOf(Logic.clientsCount));
+            ObservableList<String> serviceBooks = FXCollections.observableArrayList("раздача №1:   " + Logic.convertToHMS(Logic.meanService));
+            ObservableList<String> kassaBooks = FXCollections.observableArrayList("касса №1:   " + Logic.convertToHMS(Logic.meanKassa));
+            kassaList.setItems(kassaBooks);
+            serviceList.setItems(serviceBooks);
 
             //вывод статистики
-            label_static_load_service_sec.setText(String.valueOf(LogicStatic.serviceManager.getWorkTime()));
-            label_static_load_kassa_sec.setText(String.valueOf(LogicStatic.kassaManager.getWorkTime()));
+            label_static_ticket_count.setText(String.valueOf(Logic.countTicketClient));// вывод кол-ва клиентов
+            label_static_noticket_count.setText(String.valueOf(Logic.countNoTicketClient));// вывод кол-ва клиентов без талона
+            label_static_count.setText(String.valueOf(Logic.clientsCount));// вывод кол-ва клиентов с талоном
+
+            label_static_load_service_sec.setText(String.valueOf(LogicStatic.serviceManager.getWorkTime()));// вывод среднего времени обслуживания на кассе
+            label_static_load_kassa_sec.setText(String.valueOf(LogicStatic.kassaManager.getWorkTime()));// вывод среднего времени обслуживания на кассе
         });
     }
 

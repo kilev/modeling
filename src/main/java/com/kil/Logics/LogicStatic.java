@@ -107,4 +107,12 @@ public class LogicStatic {
             stack2.remove(stack2.get(0));
         }
     }
+
+    public static int getCustomersAmount(){
+        return serviceManager.getWorkTime();
+    }
+
+    public static int getKassaAmount(){
+        return kassaManager.getWorkTime();
+    }
 }
