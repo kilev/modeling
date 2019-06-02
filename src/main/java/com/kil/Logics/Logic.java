@@ -23,6 +23,7 @@ public class Logic {
     public static int kassaCount;
 
     public static int averageTimeOnService;
+    public static int averageTimeInStack;
 
 
     static List<Client> clients = new ArrayList<>();// коллекция клиентов
@@ -93,6 +94,7 @@ public class Logic {
     public static List<Integer> averageTicketClientsCount = new ArrayList<>();
     public static List<Integer> averageNoTicketClientsCount = new ArrayList<>();
     public static List<Integer> averageServiceTime = new ArrayList<>();
+    public static List<Integer> averageStackTime = new ArrayList<>();
 
     public static double experiment(double epsilon) {
         Map<Double, Double> t = new HashMap<>() {{
@@ -121,6 +123,7 @@ public class Logic {
         averageTicketClientsCount.clear();
         averageNoTicketClientsCount.clear();
         averageServiceTime.clear();
+        averageStackTime.clear();
 
         List<List<Integer>> amountsService = new ArrayList<>();
         for (int i = 0; i < Logic.serviceCount; i++) {
@@ -144,6 +147,7 @@ public class Logic {
                 averageTicketClientsCount.add(LogicStatic.getTicketsClientCount());
                 averageNoTicketClientsCount.add(LogicStatic.getNoTicketsClientCount());
                 averageServiceTime.add(LogicStatic.getAverageServiceTime());
+                averageStackTime.add(LogicStatic.getAverageStackTime());
                 ////
 
                 for (int j = 0; j < serviceAmount.size(); j++) {
@@ -178,6 +182,7 @@ public class Logic {
         countTicketClient = (int) getMean(averageTicketClientsCount);
         countNoTicketClient = (int) getMean(averageNoTicketClientsCount);
         averageTimeOnService = (int) getMean(averageServiceTime);
+        averageTimeInStack = (int) getMean(averageStackTime);
         return mean;
     }
 
@@ -205,6 +210,8 @@ public class Logic {
     }
 
     public static String convertToHMSP(int value, boolean percent) {
+        if(value == 0)
+            return 0 + " C";
         String str = "";
         if (value / 3600 != 0)
             str += value / 3600 + "Ч ";

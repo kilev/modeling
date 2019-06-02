@@ -24,6 +24,8 @@ public class Client {
     private int spawnDelay;
     private int timeOnService;
     private int timeOnKassa;
+    private int timeStackStart;
+    private int stackTime;
 
 
     public Client(int spawnDelay, int timeOnDistribution, int timeOnKassa) {
@@ -118,5 +120,13 @@ public class Client {
     private void loadClassicProperties(int timeOnDistribution, int timeOnKassa) {
         way = new int[]{250, timeOnDistribution, 50, 100, timeOnKassa, 25, 1};
         direction = new String[]{"forward", "pause", "forward", "down", "pause", "down", "death"};
+    }
+
+    public void setInStack(int time){
+        timeStackStart = time;
+    }
+
+    public void setOutStack(int time){
+        stackTime += time - timeStackStart;
     }
 }

@@ -54,7 +54,7 @@ public class FXMLController {
     private TextField chanceTicket;
 
     @FXML
-    private Label label_average_time_on_kassa;
+    private Label label_average_time_in_stack;
 
     @FXML
     private Label label_average_time_on_service;
@@ -180,6 +180,7 @@ public class FXMLController {
             label_static_noticket_count.setText(String.valueOf(Logic.countNoTicketClient));// вывод кол-ва клиентов без талона
             label_static_count.setText(String.valueOf(Logic.clientsCount));// вывод кол-ва клиентов с талоном
             label_average_time_on_service.setText(String.valueOf(Logic.convertToHMSP(Logic.averageTimeOnService, false)));
+            label_average_time_in_stack.setText(Logic.convertToHMSP(Logic.averageTimeInStack, false));
         });
     }
 

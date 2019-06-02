@@ -9,6 +9,8 @@ import java.util.List;
 
 public class LogicStatic {
 
+    private static List<Integer> stackTime = new ArrayList<>();
+
     private static List<Client> stack1 = new ArrayList<>();// очередь перед раздачей
     private static List<Client> stack2 = new ArrayList<>();// очередь перед кассой
 
@@ -27,9 +29,8 @@ public class LogicStatic {
         clients.clear();
         stack1.clear();
         stack2.clear();
-//        serviceManager = new Manager();
-//        kassaManager = new Manager();
 
+        stackTime.clear();
         managersService.clear();
         managersKassa.clear();
         for (int i = 0; i < Logic.serviceCount; i++) {
@@ -56,14 +57,17 @@ public class LogicStatic {
         switch (nextEvent.event) {
             case "spawn":
                 stack1.add(nextEvent.eventClient);
+                nextEvent.eventClient.setInStack(localTime);
                 clients.remove(0);
                 break;
 
             case "service done":
                 for (Manager manager : managersService) {
                     if (manager.getClient() == nextEvent.eventClient) {
-                        if (!manager.getClient().isTicket())
+                        if (!manager.getClient().isTicket()){
                             stack2.add(nextEvent.eventClient);
+                            nextEvent.eventClient.setInStack(localTime);
+                        }
                         manager.removeClient(localTime);
                         return;
                     }
@@ -128,12 +132,18 @@ public class LogicStatic {
         for (Manager manager : managersService) {
             if (!manager.isWorking() && !stack1.isEmpty()) {
                 manager.setClient(stack1.get(0), localTime);
+                stack1.get(0).setOutStack(localTime);
+                if(stack1.get(0).isTicket())
+                    stackTime.add(stack1.get(0).getStackTime());
                 stack1.remove(stack1.get(0));
+
             }
         }
         for (Manager manager : managersKassa) {
             if (!manager.isWorking() && !stack2.isEmpty()) {
                 manager.setClient(stack2.get(0), localTime);
+                stack2.get(0).setOutStack(localTime);
+                stackTime.add(stack2.get(0).getStackTime());
                 stack2.remove(stack2.get(0));
             }
         }
@@ -174,6 +184,13 @@ public class LogicStatic {
             time += manager.getWorkTime();
             count += manager.getClientCount();
         }
-        return time/count;
+        if(count != 0)
+            return time/count;
+        else
+            return 0;
+    }
+
+    public static int getAverageStackTime(){
+        return stackTime.stream().reduce(0,Integer::sum) / stackTime.size();
     }
 }
