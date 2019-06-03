@@ -1,6 +1,7 @@
 package com.kil.Logics;
 
 import com.kil.Client;
+import com.kil.Manager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +18,9 @@ public class Logic {
 
     public static int matSpawn;
     public static int matService;
-    public static double sigmaKassa;
+    public static int matKassa;
+    public static int sigmaKassa;
+    public static double accuracy;
 
     public static int serviceCount;
     public static int kassaCount;
@@ -44,7 +47,7 @@ public class Logic {
             clientsCount++;
 
             if (Math.random() < chance) {
-                clients.add(new Client(spawnRandom, getRandomExpValue(matService), getRandomReleyValue(sigmaKassa)));
+                clients.add(new Client(spawnRandom, getRandomExpValue(matService), getRandomNormValue(sigmaKassa, matKassa)));
                 countNoTicketClient++;
             } else {
                 clients.add(new Client(spawnRandom, getRandomExpValue(matService)));
@@ -62,8 +65,19 @@ public class Logic {
     }
 
 
-    private static int getRandomReleyValue(double sigma) {
-        return (int) (sigma * Math.sqrt(-2 * Math.log(Math.random())));
+    private static int getRandomNormValue(int sigma, int mat) {
+        //return (int) (sigma * Math.sqrt(-2 * Math.log(Math.random())));
+        //////
+        double x, y, s;
+        do{
+            x = Math.random() * 2 - 1;
+            y = Math.random() * 2 - 1;
+            s = x * x + y * y;
+        }while(s > 1 || s == 0);
+
+        double z = x * Math.sqrt((-2 * Math.log10(s)) / s);
+        int res = (int) (mat + sigma * z);
+        return res;
     }
 
     private static int getRandomExpValue(int mat) {
@@ -125,6 +139,7 @@ public class Logic {
         averageServiceTime.clear();
         averageStackTime.clear();
 
+        //TODO: сделать для каждого цикла
         List<List<Integer>> amountsService = new ArrayList<>();
         for (int i = 0; i < Logic.serviceCount; i++) {
             amountsService.add(new ArrayList<>());
@@ -165,8 +180,12 @@ public class Logic {
                 break;
             else {
                 N = newN;
-                amountsService.clear();
-                amountsKassa.clear();
+                for (List<Integer> list : amountsService) {
+                    list.clear();
+                }
+                for (List<Integer> list : amountsKassa) {
+                    list.clear();
+                }
             }
         }
         System.out.println("N := " + N);
@@ -190,7 +209,7 @@ public class Logic {
 
 
     public static void run() {
-        double epsilon = 0.2;
+        double epsilon = accuracy;
         List<Double> averageAmounts = new ArrayList<>();
         for (int i = 0; i < 6; i++) {
             averageAmounts.add(experiment(epsilon));

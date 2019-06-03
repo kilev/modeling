@@ -136,7 +136,6 @@ public class LogicStatic {
                 if(stack1.get(0).isTicket())
                     stackTime.add(stack1.get(0).getStackTime());
                 stack1.remove(stack1.get(0));
-
             }
         }
         for (Manager manager : managersKassa) {

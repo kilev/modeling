@@ -17,6 +17,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import lombok.extern.java.Log;
 
 public class FXMLController {
 
@@ -31,6 +32,9 @@ public class FXMLController {
 
     @FXML
     private TextField Text_M_work;
+
+    @FXML
+    private TextField Text_M_pay;
 
     @FXML
     private TextField Text_S_pay;
@@ -93,6 +97,9 @@ public class FXMLController {
     private Button button_test2;
 
     @FXML
+    private Spinner<Double> spinner_accuracy;
+
+    @FXML
     private AnchorPane drawPane;
 
     @FXML
@@ -133,6 +140,11 @@ public class FXMLController {
         //setUp spinners
         SpinnerValueFactory<Integer> valueFactoryService = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1);
         SpinnerValueFactory<Integer> valueFactoryKassa = new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 10, 1);
+
+        ObservableList<Double> accuracyValues = FXCollections.observableArrayList(0.2, 0.15, 0.1, 0.05, 0.04, 0.03, 0.02, 0.01, 0.005, 0.0001);
+        SpinnerValueFactory<Double> valueFactory = new SpinnerValueFactory.ListSpinnerValueFactory<>(accuracyValues);
+        spinner_accuracy.setValueFactory(valueFactory);
+
         countKassa.setValueFactory(valueFactoryService);
         countService.setValueFactory(valueFactoryKassa);
 
@@ -156,8 +168,10 @@ public class FXMLController {
             Logic.chance = Double.parseDouble(chanceTicket.getText());// считывание вероятности талона
             Logic.matSpawn = Integer.parseInt(Text_M_inPut.getText());// считывание мат ожидания спавна
             Logic.matService = Integer.parseInt(Text_M_work.getText());// считывание мат ожиданя обслуживания на раздаче
-            Logic.sigmaKassa = Double.parseDouble(Text_S_pay.getText());// считывания сигмы обслуживания на кассе
+            Logic.sigmaKassa = Integer.parseInt(Text_S_pay.getText());// считывания сигмы обслуживания на кассе
+            Logic.matKassa = Integer.parseInt(Text_M_pay.getText());
 
+            Logic.accuracy = spinner_accuracy.getValue();
             Logic.serviceCount = countService.getValue();
             Logic.kassaCount = countKassa.getValue();
 
