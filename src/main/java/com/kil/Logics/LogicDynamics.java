@@ -20,9 +20,6 @@ public class LogicDynamics {
     public static int velocity = 1;
     public static List<Client> clients = new ArrayList<>();
 
-    public double averageTimeOnService;
-    public double averageTimeOnKassa;
-
 
     public static void createClient(boolean ticket) {
         Client client;

@@ -56,7 +56,7 @@ public class Logic {
         }
     }
 
-    private static void lounchDynamic() {
+    public static void lounchDynamic() {
         LogicDynamics.stack = 0;
         LogicDynamics.clients.clear();
         for (Client client : clients) {
@@ -190,7 +190,7 @@ public class Logic {
         }
         System.out.println("N := " + N);
 
-        //подсчет средних значений за эксперимент
+        //подсчет средних значений за все моделирование
         for (int i = 0; i < serviceCount; i++) {
             averageServiceAmount.add((int) getMean(amountsService.get(i)));
         }

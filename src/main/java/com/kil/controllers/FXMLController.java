@@ -58,6 +58,9 @@ public class FXMLController {
     private TextField chanceTicket;
 
     @FXML
+    private Label label_average_time;
+
+    @FXML
     private Label label_average_time_in_stack;
 
     @FXML
@@ -177,6 +180,7 @@ public class FXMLController {
 
             //запуск логики
             Logic.run();
+            Logic.lounchDynamic();
 
             //вывод статистики
             ObservableList<String> serviceBooks = FXCollections.observableArrayList();
@@ -195,12 +199,13 @@ public class FXMLController {
             label_static_count.setText(String.valueOf(Logic.clientsCount));// вывод кол-ва клиентов с талоном
             label_average_time_on_service.setText(String.valueOf(Logic.convertToHMSP(Logic.averageTimeOnService, false)));
             label_average_time_in_stack.setText(Logic.convertToHMSP(Logic.averageTimeInStack, false));
+            label_average_time.setText(Logic.convertToHMSP(Logic.averageTimeOnService + Logic.averageTimeInStack, false));
         });
     }
 
     private void updateData(){
         label_count.setText(String.valueOf(LogicDynamics.stack));
-        label_totalClientFinished.setText(String.valueOf(LogicDynamics.totalClientFinished));
+        //label_totalClientFinished.setText(String.valueOf(LogicDynamics.totalClientFinished));
     }
 
     private void update() {
@@ -264,9 +269,9 @@ public class FXMLController {
 
             //set color
             if (client.isTicket())
-                circle.setFill(Color.RED);
+                circle.setFill(Color.ORANGE);
             else
-                circle.setFill(Color.BLUE);
+                circle.setFill(Color.GREEN);
 
             drawPane.getChildren().add(circle);
         }

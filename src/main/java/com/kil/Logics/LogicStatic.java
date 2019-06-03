@@ -68,6 +68,7 @@ public class LogicStatic {
                             stack2.add(nextEvent.eventClient);
                             nextEvent.eventClient.setInStack(localTime);
                         }
+                        stackTime.add(manager.getClient().getStackTime());
                         manager.removeClient(localTime);
                         return;
                     }
@@ -77,6 +78,7 @@ public class LogicStatic {
             case "kassa done":
                 for (Manager manager : managersKassa) {
                     if(manager.getClient() == nextEvent.eventClient){
+                        stackTime.add(manager.getClient().getStackTime());
                         manager.removeClient(localTime);
                         return;
                     }
@@ -133,8 +135,8 @@ public class LogicStatic {
             if (!manager.isWorking() && !stack1.isEmpty()) {
                 manager.setClient(stack1.get(0), localTime);
                 stack1.get(0).setOutStack(localTime);
-                if(stack1.get(0).isTicket())
-                    stackTime.add(stack1.get(0).getStackTime());
+//                if(stack1.get(0).isTicket())
+//                    stackTime.add(stack1.get(0).getStackTime());
                 stack1.remove(stack1.get(0));
             }
         }
@@ -142,7 +144,7 @@ public class LogicStatic {
             if (!manager.isWorking() && !stack2.isEmpty()) {
                 manager.setClient(stack2.get(0), localTime);
                 stack2.get(0).setOutStack(localTime);
-                stackTime.add(stack2.get(0).getStackTime());
+                //stackTime.add(stack2.get(0).getStackTime());
                 stack2.remove(stack2.get(0));
             }
         }
